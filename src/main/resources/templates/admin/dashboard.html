@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - COSTUME RENTAL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+<div class="container my-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
+        <h2 class="h4 mb-0 fw-bold text-dark"><i class="bi bi-speedometer2 me-2"></i>ระบบจัดการสำหรับ Admin</h2>
+        <div>
+            <a th:href="@{/admin/costumes/new}" class="btn btn-success"><i class="bi bi-plus-lg me-1"></i> เพิ่มชุดเช่าใหม่</a>
+            <a th:href="@{/}" class="btn btn-outline-secondary ms-2"><i class="bi bi-house-door me-1"></i>หน้าเว็บหลัก</a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs fw-bold" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active text-dark" id="costumes-tab" data-bs-toggle="tab" data-bs-target="#costumes" type="button" role="tab">
+                <i class="bi bi-bag-heart me-1"></i>ชุดทั้งหมด
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-dark" id="rentals-tab" data-bs-toggle="tab" data-bs-target="#rentals" type="button" role="tab">
+                <i class="bi bi-receipt me-1"></i>รายการเช่า-คืน
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content bg-white p-3 border border-top-0 rounded-bottom shadow-sm" id="myTabContent">
+        
+        <!-- Tab 1: ชุดทั้งหมด -->
+        <div class="tab-pane fade show active" id="costumes" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th>ชื่อชุด</th>
+                            <th>หมวดหมู่</th>
+                            <th>ค่าเช่า/วัน</th>
+                            <th>สถานะ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${costumes}">
+                            <td th:text="${c.id}">1</td>
+                            <td class="fw-bold" th:text="${c.name}">ชุด</td>
+                            <td th:text="${c.category != null ? c.category : '-'}">หมวด</td>
+                            <td th:text="${#numbers.formatDecimal(c.price != null ? c.price : (c.rentalPricePerDay != null ? c.rentalPricePerDay : 0), 1, 'COMMA', 2, 'POINT')} + ' ฿'">500.00 ฿</td>
+                            <td>
+                                <!-- เพิ่มการแยกสีสถานะตามข้อความ -->
+                                <span class="badge" 
+                                      th:classappend="${c.status == 'ว่าง' ? 'bg-success' : 
+                                                       (c.status == 'ติดจอง' ? 'bg-danger' : 
+                                                       (c.status == 'ส่งซัก' ? 'bg-info text-dark' : 
+                                                       (c.status == 'รอคืน' ? 'bg-warning text-dark' : 'bg-secondary')))}"
+                                      th:text="${c.status}">
+                                    ว่าง
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(costumes)}">
+                            <td colspan="5" class="text-center text-muted py-3">ยังไม่มีข้อมูลชุดเช่าในระบบ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 2: รายการเช่า -->
+        <div class="tab-pane fade" id="rentals" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th>ผู้เช่า</th>
+                            <th>ชุด</th>
+                            <th>เริ่ม - คืน</th>
+                            <th>ยอดรวม</th>
+                            <th>สถานะ</th>
+                            <th>การจัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="r : ${rentals}">
+                            <td th:text="${r.id}">1</td>
+                            <td th:text="${r.customerName}">ชื่อ</td>
+                            <td th:text="${r.costume?.name != null ? r.costume.name : '-'}">ชุด</td>
+                            <td th:text="|${r.startDate} ถึง ${r.endDate}|">วันที่</td>
+                            <td th:text="${#numbers.formatDecimal(r.totalRentalFee != null ? r.totalRentalFee : 0, 1, 'COMMA', 2, 'POINT')} + ' ฿'">0.00 ฿</td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${r.status == 'ACTIVE' || r.status == 'กำลังเช่า' ? 'bg-primary' : 
+                                                       (r.status == 'RETURNED' || r.status == 'คืนแล้ว' ? 'bg-success' : 'bg-secondary')}"
+                                      th:text="${r.status}">
+                                    ACTIVE
+                                </span>
+                            </td>
+                            <td>
+                                <form th:if="${r.status == 'ACTIVE' || r.status == 'กำลังเช่า'}" th:action="@{/admin/rentals/return/{id}(id=${r.id})}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-warning fw-bold">
+                                        <i class="bi bi-box-arrow-in-left me-1"></i>บันทึกรับคืน
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(rentals)}">
+                            <td colspan="7" class="text-center text-muted py-3">ยังไม่มีรายการเช่าในระบบ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

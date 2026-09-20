@@ -1,0 +1,23 @@
+body {
+    font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    height: 220px;
+    object-fit: cover;
+}
+
+.badge {
+    font-size: 0.85rem;
+    padding: 0.4em 0.6em;
+}

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COSTUME RENTAL - บริการเช่าชุดออนไลน์</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .banner-bg {
+            background: linear-gradient(135deg, #c02626 0%, #881313 100%);
+        }
+        .status-badge-ว่าง { background-color: #198754; color: white; }
+        .status-badge-ติดจอง { background-color: #ffc107; color: #212529; }
+        .status-badge-รอคืน { background-color: #0d6efd; color: white; }
+        .status-badge-ส่งซัก { background-color: #dc3545; color: white; }
+        .card-img-container {
+            height: 220px;
+            overflow: hidden;
+            position: relative;
+        }
+        .card-img-container img {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.3s ease;
+        }
+        .card:hover .card-img-container img {
+            transform: scale(1.05);
+        }
+        .search-box {
+            max-width: 500px;
+        }
+        /* ✨ เพิ่มเอฟเฟกต์ปุ่มลิงก์โปรไฟล์ */
+        .profile-btn-link {
+            color: white;
+            text-decoration: none;
+            padding: 4px 12px;
+            border-radius: 50rem;
+            background-color: rgba(255, 255, 255, 0.15);
+            transition: all 0.2s ease;
+        }
+        .profile-btn-link:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+    <!-- Navigation Bar กลางสำหรับใช้เชื่อมทุกหน้า -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/}" href="/">
+                <i class="bi bi-bag-heart-fill me-1"></i> COSTUME RENTAL
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/}" href="/"><i class="bi bi-house-door me-1"></i> หน้าแรก</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/orders}" href="/orders"><i class="bi bi-truck me-1"></i> ติดตามสถานะ / ไทม์ไลน์</a>
+                    </li>
+                </ul>
+                
+                <!-- 🛠️ ส่วนตรวจสอบสถานะการ Login -->
+                <div class="d-flex align-items-center text-white">
+                    <!-- แสดงเมื่อล็อกอินสำเร็จแล้ว -->
+                    <div th:if="${loggedInUser != null and loggedInUser != 'Guest'}" class="d-flex align-items-center">
+                        <!-- ✏️ ปุ่มคลิกเพื่อเข้าไปหน้าแก้ไขโปรไฟล์ (/user/profile) -->
+                        <a th:href="@{/user/profile}" href="/user/profile" class="profile-btn-link me-3 small d-flex align-items-center" title="คลิกเพื่อจัดการข้อมูลส่วนตัว">
+                            <i class="bi bi-person-circle fs-6 me-1"></i>
+                            <span>สวัสดี, <strong th:text="${loggedInUser}">User</strong></span>
+                            <i class="bi bi-pencil-square ms-1 text-warning small"></i>
+                        </a>
+                        <a th:href="@{/logout}" href="/logout" class="btn btn-outline-light btn-sm rounded-pill">ออกจากระบบ</a>
+                    </div>
+
+                    <!-- แสดงเมื่อยังไม่ได้ล็อกอิน (Guest) -->
+                    <div th:if="${loggedInUser == null or loggedInUser == 'Guest'}">
+                        <a th:href="@{/login}" href="/login" class="btn btn-outline-light btn-sm rounded-pill me-2">เข้าสู่ระบบ</a>
+                        <a th:href="@{/register}" href="/register" class="btn btn-light btn-sm text-danger rounded-pill fw-bold">สมัครสมาชิก</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content Container -->
+    <div class="container my-4 flex-grow-1">
+
+        <!-- Banner -->
+        <div class="banner-bg text-white rounded-4 p-5 text-center mb-4 shadow">
+            <h1 class="fw-bold mb-2">บริการเช่าชุดออนไลน์</h1>
+            <p class="fs-5 mb-4 text-white-50">ชุดสวย สภาพดี พร้อมใช้งานสำหรับทุกโอกาสสำคัญของคุณ</p>
+            
+            <!-- 🔍 ช่องค้นหาชุด (Search Bar) -->
+            <div class="search-box mx-auto">
+                <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden bg-white p-1">
+                    <span class="input-group-text bg-white border-0 ps-3 text-muted">
+                        <i class="bi bi-search fs-5"></i>
+                    </span>
+                    <input type="text" id="search-input" class="form-control border-0 fs-6 shadow-none" 
+                           placeholder="ค้นหาชื่อชุด เช่น ชุดไทย, ชุดสูท, กิโมโน..." onkeyup="filterCostumes()">
+                    <button class="btn btn-danger rounded-pill px-4" type="button" onclick="filterCostumes()">
+                        ค้นหา
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Title & Status Filter Buttons -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+            <h5 class="fw-bold text-danger mb-0 d-flex align-items-center">
+                <i class="bi bi-grid-fill me-2"></i> รายการชุดเช่า (<span id="costume-count" th:text="${#lists.size(costumes)}">10</span> ชุด)
+            </h5>
+            
+            <!-- ปุ่มกดกรองแยกตามสถานะ -->
+            <div class="d-flex flex-wrap gap-2" id="filter-buttons">
+                <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 filter-btn active shadow border border-2 border-dark" onclick="setStatusFilter('all', this)">
+                    ทั้งหมด
+                </button>
+                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 filter-btn" style="opacity: 0.6;" onclick="setStatusFilter('ว่าง', this)">
+                    <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i> ว่าง
+                </button>
+                <button type="button" class="btn btn-sm btn-warning text-dark rounded-pill px-3 filter-btn" style="opacity: 0.6;" onclick="setStatusFilter('ติดจอง', this)">
+                    <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i> ติดจอง
+                </button>
+                <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 filter-btn" style="opacity: 0.6;" onclick="setStatusFilter('รอคืน', this)">
+                    <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i> รอคืน
+                </button>
+                <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 filter-btn" style="opacity: 0.6;" onclick="setStatusFilter('ส่งซัก', this)">
+                    <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i> ส่งซัก
+                </button>
+            </div>
+        </div>
+
+        <!-- ⚠️ กล่องแจ้งเตือนกรณีค้นหาไม่พบข้อมูล -->
+        <div id="no-results" class="text-center py-5 my-4 bg-white rounded-3 shadow-sm d-none">
+            <i class="bi bi-search-heart text-muted display-4 d-block mb-3"></i>
+            <h5 class="text-secondary fw-bold">ไม่พบข้อมูลชุดเช่าที่ตรงกับการค้นหา</h5>
+            <p class="text-muted small">ลองเปลี่ยนคำค้นหา หรือกดปุ่ม "ทั้งหมด" เพื่อดูรายการชุดที่มี</p>
+            <button class="btn btn-outline-danger btn-sm rounded-pill px-4 mt-2" onclick="resetFilters()">
+                ดูชุดทั้งหมด
+            </button>
+        </div>
+
+        <!-- Grid Cards แสดงชุดเช่า -->
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="costume-grid">
+            <div class="col costume-item" 
+                 th:data-status="${costume.status}" 
+                 th:data-name="${costume.name}" 
+                 th:data-category="${costume.category}" 
+                 th:each="costume : ${costumes}">
+                <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
+                    
+                    <!-- รูปภาพ + ป้ายสถานะ -->
+                    <div class="card-img-container">
+                        <img th:src="${costume.imageUrl}" alt="รูปชุด">
+                        <span class="position-absolute top-0 end-0 m-2 badge rounded-pill px-3 py-2 shadow-sm fs-6"
+                              th:classappend="'status-badge-' + ${costume.status}">
+                            <i class="bi bi-circle-fill me-1" style="font-size: 7px;"></i>
+                            <span th:text="${costume.status}">สถานะ</span>
+                        </span>
+                    </div>
+
+                    <!-- รายละเอียดการ์ด -->
+                    <div class="card-body d-flex flex-column">
+                        <span class="badge bg-light text-secondary w-auto align-self-start mb-2" th:text="${costume.category}">หมวดหมู่</span>
+                        <h6 class="card-title fw-bold text-dark text-truncate" th:text="${costume.name}">ชื่อชุดเช่า</h6>
+                        
+                        <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 11px;">ราคาเช่า/วัน</small>
+                                <span class="fw-bold text-danger fs-5" th:text="${#numbers.formatDecimal(costume.price, 0, 'COMMA', 0, 'POINT')} + ' ฿'">1,000 ฿</span>
+                            </div>
+                            <a th:href="@{/costumes/{id}(id=${costume.id})}" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                รายละเอียด
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-top py-3 text-center text-muted mt-auto">
+        <div class="container">
+            <small>© 2026 Khon Kaen University Costume Rental System. All rights reserved.</small>
+        </div>
+    </footer>
+
+    <!-- JavaScript ระบบค้นหาและกรองสถานะ -->
+    <script>
+        let currentStatus = 'all';
+
+        function filterCostumes() {
+            const keyword = document.getElementById('search-input').value.toLowerCase().trim();
+            const items = document.querySelectorAll('.costume-item');
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                const itemStatus = item.getAttribute('data-status');
+                const itemName = (item.getAttribute('data-name') || '').toLowerCase();
+                const itemCategory = (item.getAttribute('data-category') || '').toLowerCase();
+
+                const matchesStatus = (currentStatus === 'all' || itemStatus === currentStatus);
+                const matchesKeyword = itemName.includes(keyword) || itemCategory.includes(keyword);
+
+                if (matchesStatus && matchesKeyword) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            document.getElementById('costume-count').innerText = visibleCount;
+
+            const noResultsBox = document.getElementById('no-results');
+            if (visibleCount === 0) {
+                noResultsBox.classList.remove('d-none');
+            } else {
+                noResultsBox.classList.add('d-none');
+            }
+        }
+
+        function setStatusFilter(status, element) {
+            currentStatus = status;
+            
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                btn.style.opacity = '0.6';
+                btn.classList.remove('shadow', 'border', 'border-2', 'border-dark');
+            });
+            
+            element.style.opacity = '1';
+            element.classList.add('shadow', 'border', 'border-2', 'border-dark');
+
+            filterCostumes();
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            const allBtn = document.querySelector('.filter-btn');
+            setStatusFilter('all', allBtn);
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

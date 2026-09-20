@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ติดตามสถานะการเช่า - COSTUME RENTAL</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .timeline-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+        .timeline-steps::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+        .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+        }
+        .step-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-weight: bold;
+        }
+        .step.active .step-icon {
+            background: #dc3545;
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2);
+        }
+        .step.completed .step-icon {
+            background: #198754;
+            color: #fff;
+        }
+        .step-label {
+            font-size: 0.78rem;
+            color: #6c757d;
+        }
+        .step.active .step-label {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .step.completed .step-label {
+            color: #198754;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Header Navigation Bar (เชื่อมทุกหน้า) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="bi bi-bag-heart-fill me-1"></i> COSTUME RENTAL
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="bi bi-house-door me-1"></i> หน้าแรก</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/orders"><i class="bi bi-truck me-1"></i> ติดตามสถานะ / ไทม์ไลน์</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <span th:if="${loggedInUser != null}" class="me-3 small">
+                        <i class="bi bi-person-circle me-1"></i> สวัสดี, <strong th:text="${loggedInUser}">User</strong>
+                    </span>
+                    <a th:if="${loggedInUser == null}" href="/login" class="btn btn-outline-light btn-sm rounded-pill me-2">เข้าสู่ระบบ</a>
+                    <a th:if="${loggedInUser == null}" href="/register" class="btn btn-light btn-sm text-danger rounded-pill fw-bold">สมัครสมาชิก</a>
+                    <a th:if="${loggedInUser != null}" href="/logout" class="btn btn-outline-light btn-sm rounded-pill">ออกจากระบบ</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <h4 class="fw-bold text-dark mb-4"><i class="bi bi-clock-history me-2 text-danger"></i>รายการเช่าและสถานะจัดส่ง</h4>
+
+        <div th:each="order : ${orders}" class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+                <div>
+                    <span class="badge bg-danger fs-6 me-2" th:text="${order.orderId}">CR-XXXXXX</span>
+                    <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>ช่วงเวลาเช่า: <span th:text="${order.rentalDate}"></span></small>
+                </div>
+                <small class="text-muted">บริษัทขนส่ง: <strong th:text="${order.courier}"></strong> (<span th:text="${order.trackingNo}"></span>)</small>
+            </div>
+
+            <div class="card-body p-4">
+                <!-- รายละเอียดชุด -->
+                <div class="d-flex align-items-center mb-4">
+                    <img th:src="${order.costumeImage}" class="rounded-3 me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                    <div>
+                        <h5 class="fw-bold mb-1" th:text="${order.costumeName}">ชื่อชุด</h5>
+                        <div class="small text-muted">
+                            ค่าเช่า: <strong class="text-danger" th:text="'฿' + ${order.totalPrice}"></strong> | 
+                            ค่ามัดจำ: <strong class="text-primary" th:text="'฿' + ${order.depositPrice}"></strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Step Status Bar -->
+                <div class="timeline-steps my-4">
+                    <!-- Step 1 -->
+                    <div class="step" th:classappend="${order.statusStep >= 1 ? (order.statusStep == 1 ? 'active' : 'completed') : ''}">
+                        <div class="step-icon">
+                            <i th:class="${order.statusStep > 1 ? 'bi bi-check-lg' : 'bi bi-box-seam'}"></i>
+                        </div>
+                        <div class="step-label">เตรียมจัดส่ง</div>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="step" th:classappend="${order.statusStep >= 2 ? (order.statusStep == 2 ? 'active' : 'completed') : ''}">
+                        <div class="step-icon">
+                            <i th:class="${order.statusStep > 2 ? 'bi bi-check-lg' : 'bi bi-truck'}"></i>
+                        </div>
+                        <div class="step-label">กำลังจัดส่ง</div>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="step" th:classappend="${order.statusStep >= 3 ? (order.statusStep == 3 ? 'active' : 'completed') : ''}">
+                        <div class="step-icon">
+                            <i th:class="${order.statusStep > 3 ? 'bi bi-check-lg' : 'bi bi-person-check'}"></i>
+                        </div>
+                        <div class="step-label">อยู่ระหว่างเช่า</div>
+                    </div>
+                    <!-- Step 4 -->
+                    <div class="step" th:classappend="${order.statusStep >= 4 ? (order.statusStep == 4 ? 'active' : 'completed') : ''}">
+                        <div class="step-icon">
+                            <i th:class="${order.statusStep > 4 ? 'bi bi-check-lg' : 'bi bi-arrow-return-left'}"></i>
+                        </div>
+                        <div class="step-label">ส่งคืนชุดแล้ว</div>
+                    </div>
+                    <!-- Step 5 -->
+                    <div class="step" th:classappend="${order.statusStep == 5 ? 'completed' : ''}">
+                        <div class="step-icon">
+                            <i class="bi bi-cash-coin"></i>
+                        </div>
+                        <div class="step-label">คืนเงินมัดจำแล้ว</div>
+                    </div>
+                </div>
+
+                <!-- รายละเอียดเงินมัดจำ / การส่งคืน -->
+                <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <small class="text-secondary d-block"><i class="bi bi-info-circle me-1"></i>สถานะมัดจำและการคืนเงิน:</small>
+                        <span class="fw-bold text-dark small" th:text="${order.refundStatus}"></span>
+                    </div>
+                    <button th:if="${order.statusStep == 3}" class="btn btn-outline-danger btn-sm rounded-pill fw-bold">
+                        <i class="bi bi-send me-1"></i> แจ้งส่งคืนชุด
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
