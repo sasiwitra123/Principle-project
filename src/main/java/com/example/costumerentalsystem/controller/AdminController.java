@@ -10,13 +10,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.costumerentalsystem.model.Costume;
+import com.example.costumerentalsystem.model.Rental;
 import com.example.costumerentalsystem.repository.CostumeRepository;
+import com.example.costumerentalsystem.repository.RentalRepository;
 import com.example.costumerentalsystem.service.CostumeService;
 
 @Controller
@@ -25,41 +28,53 @@ public class AdminController {
 
     private final CostumeService costumeService;
     private final CostumeRepository costumeRepository;
+    private final RentalRepository rentalRepository;
 
-    public AdminController(CostumeService costumeService, CostumeRepository costumeRepository) {
+    public AdminController(CostumeService costumeService, 
+                           CostumeRepository costumeRepository,
+                           RentalRepository rentalRepository) {
         this.costumeService = costumeService;
         this.costumeRepository = costumeRepository;
+        this.rentalRepository = rentalRepository;
     }
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("costumes", costumeService.getAllCostumes());
-        model.addAttribute("rentals", new java.util.ArrayList<>()); 
+        model.addAttribute("rentals", rentalRepository.findAll());
         return "admin/dashboard";
     }
 
-    // 🟢 1. เปิดหน้าฟอร์มเพิ่มชุดใหม่ (templates/admin/costume-form.html)
     @GetMapping("/costumes/new")
     public String showAddCostumeForm(Model model) {
         model.addAttribute("costume", new Costume());
         return "admin/costume-form";
     }
 
-    // 🟢 2. บันทึกข้อมูลชุด + รองรับการอัปโหลดรูปภาพ
+    @GetMapping("/costumes/edit/{id}")
+    public String showAdminEditForm(@PathVariable Long id, Model model) {
+        Costume costume = costumeService.getCostumeById(id);
+        model.addAttribute("costume", costume);
+        return "admin/costume-edit";
+    }
+
     @PostMapping("/costumes/save")
     public String saveCostume(@ModelAttribute("costume") Costume costume,
                               @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
-        
-        // จัดการอัปโหลดรูปภาพ (ถ้าผู้ใช้เลือกไฟล์)
+        if (costume.getId() != null && (imageFile == null || imageFile.isEmpty())) {
+            Costume existing = costumeRepository.findById(costume.getId()).orElse(null);
+            if (existing != null) {
+                costume.setImageUrl(existing.getImageUrl());
+            }
+        }
+
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
                 String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
                 Path uploadDir = Paths.get("src/main/resources/static/uploads");
-                
                 if (!Files.exists(uploadDir)) {
                     Files.createDirectories(uploadDir);
                 }
-                
                 Files.copy(imageFile.getInputStream(), uploadDir.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
                 costume.setImageUrl("/uploads/" + fileName);
             } catch (IOException e) {
@@ -67,12 +82,46 @@ public class AdminController {
             }
         }
 
-        // ตั้งค่าสถานะเริ่มต้นหากไม่ได้ระบุ
         if (costume.getStatus() == null || costume.getStatus().trim().isEmpty()) {
             costume.setStatus("ว่าง");
         }
 
         costumeRepository.save(costume);
+        return "redirect:/admin/dashboard";
+    }
+
+    // 1. อัปเดตเลขพัสดุและขนส่ง
+    @PostMapping("/rentals/update-tracking/{id}")
+    public String updateTracking(@PathVariable Long id,
+                                 @RequestParam("courier") String courier,
+                                 @RequestParam("trackingNo") String trackingNo) {
+        Rental rental = rentalRepository.findById(id).orElse(null);
+        if (rental != null) {
+            rental.setCourier(courier);
+            rental.setTrackingNo(trackingNo);
+            // เปลี่ยนสถานะเป็น "กำลังจัดส่ง" เมื่อแอดมินกรอกเลขพัสดุ
+            rental.setStatus("กำลังจัดส่ง"); 
+            rentalRepository.save(rental);
+        }
+        return "redirect:/admin/dashboard";
+    }
+
+    //  2. บันทึกรับคืนชุด -> เปลี่ยนสถานะชุดในร้านกลับเป็น "ว่าง"
+    @PostMapping("/rentals/return/{id}")
+    public String returnCostume(@PathVariable Long id) {
+        Rental rental = rentalRepository.findById(id).orElse(null);
+        if (rental != null) {
+            // อัปเดตสถานะการเช่าเป็น "คืนเรียบร้อย" (เส้น Timeline จะสิ้นสุด)
+            rental.setStatus("คืนเรียบร้อย");
+            rentalRepository.save(rental);
+
+            // อัปเดตชุดเช่ากลับมาพร้อมให้คนอื่นเช่าต่อ
+            if (rental.getCostume() != null) {
+                Costume costume = rental.getCostume();
+                costume.setStatus("ว่าง");
+                costumeRepository.save(costume);
+            }
+        }
         return "redirect:/admin/dashboard";
     }
 }

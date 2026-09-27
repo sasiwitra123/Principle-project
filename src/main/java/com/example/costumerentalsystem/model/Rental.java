@@ -82,4 +82,24 @@ public void setTotalRentalFee(double totalRentalFee) {
 public double getTotalRentalFee() {
     return this.totalPrice;
 }
+// ตัวแปรสำหรับระบบ Tracking
+    private String courier;
+    private String trackingNo;
+
+    // --- Getter & Setter สำหรับระบบ Tracking ---
+    public String getCourier() {
+        return courier;
+    }
+
+    public void setCourier(String courier) {
+        this.courier = courier;
+    }
+
+    public String getTrackingNo() {
+        return trackingNo;
+    }
+
+    public void setTrackingNo(String trackingNo) {
+        this.trackingNo = trackingNo;
+    }
 }

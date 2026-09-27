@@ -1,54 +1,61 @@
 package com.example.costumerentalsystem.controller;
 
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import com.example.costumerentalsystem.model.Rental;
+import com.example.costumerentalsystem.model.User;
+import com.example.costumerentalsystem.repository.RentalRepository;
+
+import jakarta.servlet.http.HttpSession;
+
 @Controller
 public class OrderController {
 
+    @Autowired
+    private RentalRepository rentalRepository;
+
     @GetMapping("/orders")
-    public String myOrders(Model model, Principal principal) {
-        if (principal != null) {
-            model.addAttribute("loggedInUser", principal.getName());
+    public String myOrders(Model model, HttpSession session) {
+        // 1. ดึง User จาก Session ที่เราใช้ล็อกอินจริงในระบบ
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+
+        // ถ้ายังไม่ได้ล็อกอิน ค่อยพาไปหน้า Login
+        if (loggedInUser == null) {
+            return "redirect:/login";
         }
 
-        // ตัวอย่างข้อมูลออเดอร์จำลอง (ในอนาคตดึงจาก Database)
-        List<Map<String, Object>> orders = new ArrayList<>();
+        String currentUsername = loggedInUser.getUsername();
+        model.addAttribute("loggedInUser", currentUsername);
 
-        // ออเดอร์ที่ 1: กำลังจัดส่ง
-        Map<String, Object> order1 = new HashMap<>();
-        order1.put("orderId", "CR-20260901");
-        order1.put("costumeName", "ชุดไทยศิวาลัย สีชมพูกลีบบัว");
-        order1.put("costumeImage", "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=300");
-        order1.put("rentalDate", "20 ก.ย. 2026 - 23 ก.ย. 2026");
-        order1.put("totalPrice", 2500);
-        order1.put("depositPrice", 1000);
-        order1.put("statusStep", 2); // 1: เตรียมส่ง, 2: กำลังส่ง, 3: เช่าอยู่, 4: ส่งคืน, 5: คืนเงินมัดจำแล้ว
-        order1.put("trackingNo", "TH123456789EX");
-        order1.put("courier", "Flash Express");
-        order1.put("refundStatus", "รอตรวจสอบเมื่อส่งชุดคืน");
-        orders.add(order1);
+        List<Rental> allRentals = rentalRepository.findAll();
+        List<Rental> orders;
 
-        // ออเดอร์ที่ 2: คืนเงินมัดจำเรียบร้อยแล้ว
-        Map<String, Object> order2 = new HashMap<>();
-        order2.put("orderId", "CR-20260815");
-        order2.put("costumeName", "ชุดกิโมโนญี่ปุ่น ลายซากุระ");
-        order2.put("costumeImage", "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300");
-        order2.put("rentalDate", "15 ส.ค. 2026 - 18 ส.ค. 2026");
-        order2.put("totalPrice", 1800);
-        order2.put("depositPrice", 800);
-        order2.put("statusStep", 5); // คืนเงินมัดจำสำเร็จ
-        order2.put("trackingNo", "KER12398745");
-        order2.put("courier", "Kerry Express");
-        order2.put("refundStatus", "โอนเงินมัดจำคืนแล้ว 800 บาท (โอนเข้าบัญชีผู้ใช้เมื่อ 19 ส.ค. 2026)");
-        orders.add(order2);
+        // 2. เช็คว่าเป็น Admin หรือไม่
+        boolean isAdmin = (loggedInUser.getRole() != null && "ADMIN".equalsIgnoreCase(loggedInUser.getRole().trim())) ||
+                          (currentUsername != null && currentUsername.toLowerCase().contains("admin"));
+
+        if (isAdmin) {
+            // 👑 แอดมิน: เห็นรายการเช่าทั้งหมด
+            orders = allRentals;
+        } else {
+            // 🟢 User ธรรมดา: กรองดูเฉพาะออเดอร์ของตัวเอง ("ของใครของมัน")
+            orders = allRentals.stream().filter(r -> {
+                try {
+                    if (r.getUser() != null && r.getUser().getUsername() != null) {
+                        return r.getUser().getUsername().equalsIgnoreCase(currentUsername);
+                    }
+                } catch (Exception e) {
+                    // ป้องกัน Error กรณีข้อมูลไม่มี User ผูกไว้
+                }
+                return false;
+            }).collect(Collectors.toList());
+        }
 
         model.addAttribute("orders", orders);
         return "orders";

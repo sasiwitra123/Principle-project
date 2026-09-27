@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Costume - Princess Collection</title>
+    <title>Edit Costume - Princess Collection</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        /* นำเข้าฟอนต์ธีมเจ้าหญิง */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Pinyon+Script&family=Prompt:wght@300;400;500;600&display=swap');
 
         :root {
@@ -38,12 +37,6 @@
             box-shadow: 0 10px 30px rgba(240, 98, 146, 0.1);
         }
         
-        .form-control:focus, .form-select:focus {
-            border-color: var(--pink-main);
-            box-shadow: 0 0 0 0.25rem rgba(255, 159, 179, 0.25);
-        }
-
-        /* ปรับแต่งกล่องอัปโหลดรูปให้เข้ากับธีม */
         .upload-box {
             border: 2px dashed #ffc0cb;
             background-color: #ffffff;
@@ -59,7 +52,6 @@
 </head>
 <body>
 
-<!-- แถบ Navbar มินิมอล -->
 <nav class="navbar navbar-light bg-white shadow-sm border-bottom py-3">
     <div class="container justify-content-center">
         <a class="navbar-brand font-princess fs-2 mb-0 text-pink" th:href="@{/}">Costume Rental</a>
@@ -68,23 +60,24 @@
 
 <div class="container my-5" style="max-width: 650px;">
     <div class="card form-card">
-        <!-- เปลี่ยน Header เป็นสไตล์มินิมอลสีขาว-ชมพู -->
         <div class="card-header bg-white border-bottom-0 pt-4 pb-0 text-center">
-            <h2 class="font-princess mb-0">Add New Costume</h2>
-            <p class="text-muted small">เพิ่มข้อมูลชุดเช่าใหม่เข้าสู่ระบบ</p>
+            <h2 class="font-princess mb-0">Edit Costume</h2>
+            <p class="text-muted small">แก้ไขข้อมูลชุดรหัส: <span class="fw-bold text-pink" th:text="${costume.id}">ID</span></p>
         </div>
         
         <div class="card-body p-4 p-md-5 pt-3">
-            <form th:action="@{/admin/costumes/save}" th:object="${costume}" method="post" enctype="multipart/form-data">
+            <!-- 🟢 แก้ไข Action ให้ชี้ไปที่ /costumes/update/{id} ถูกต้องตาม Controller -->
+            <form th:action="@{/costumes/update/{id}(id=${costume.id})}" th:object="${costume}" method="post" enctype="multipart/form-data">
                 
-                <!-- ชื่อชุด -->
+                <!-- ซ่อน ID ของชุดไว้เพื่อให้อัปเดตถูกเรคคอร์ด -->
+                <input type="hidden" th:field="*{id}" />
+
                 <div class="mb-3">
                     <label for="name" class="form-label fw-medium text-secondary small">Costume Name (ชื่อชุดเช่า) <span class="text-danger">*</span></label>
-                    <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="เช่น ชุดไทยจักรพรรดิสีแดง" required />
+                    <input type="text" id="name" th:field="*{name}" class="form-control" required />
                 </div>
 
                 <div class="row g-3 mb-3">
-                    <!-- หมวดหมู่ -->
                     <div class="col-md-6">
                         <label for="category" class="form-label fw-medium text-secondary small">Category (หมวดหมู่) <span class="text-danger">*</span></label>
                         <select id="category" th:field="*{category}" class="form-select" required>
@@ -96,47 +89,37 @@
                         </select>
                     </div>
                     
-                    <!-- ค่าเช่าต่อวัน -->
                     <div class="col-md-6">
                         <label for="price" class="form-label fw-medium text-secondary small">Rental Price (ค่าเช่าต่อวัน) <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light">฿</span>
-                            <input type="number" step="0.01" id="price" th:field="*{price}" class="form-control" placeholder="800.00" required />
+                            <input type="number" step="0.01" id="price" th:field="*{price}" class="form-control" required />
                         </div>
                     </div>
                 </div>
 
-                <!-- รายละเอียดเพิ่มเติม -->
                 <div class="mb-3">
                     <label for="description" class="form-label fw-medium text-secondary small">Description (รายละเอียดเพิ่มเติม)</label>
-                    <textarea id="description" th:field="*{description}" class="form-control" rows="3" placeholder="เช่น ไซส์ M-L, รวมเครื่องประดับ 3 ชิ้น, เหมาะสำหรับงานราตรี..."></textarea>
+                    <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
                 </div>
 
-                <!-- กล่องอัปโหลดรูปภาพ -->
+                <!-- ส่วนอัปโหลดรูปภาพใหม่ -->
                 <div class="mb-3">
-                    <label class="form-label fw-medium text-secondary small">Costume Image (รูปภาพชุดเช่า)</label>
-                    
+                    <label class="form-label fw-medium text-secondary small">Update Image (เปลี่ยนรูปภาพใหม่)</label>
                     <div class="upload-box text-center p-4 position-relative" id="drop-zone" onclick="document.getElementById('imageFile').click()">
-                        <!-- ตัวอย่างรูปภาพเมื่อเลือกไฟล์แล้ว -->
                         <div id="preview-container" class="d-none mb-2">
-                            <img id="image-preview" src="#" alt="ตัวอย่างรูปภาพ" class="img-fluid rounded shadow-sm" style="max-height: 220px; object-fit: cover;">
+                            <img id="image-preview" src="#" alt="Preview" class="img-fluid rounded shadow-sm" style="max-height: 220px; object-fit: cover;">
                         </div>
-
-                        <!-- ข้อความแนะนำอัปโหลด -->
                         <div id="upload-placeholder">
-                            <i class="bi bi-cloud-arrow-up display-4 text-pink mb-2 d-block"></i>
-                            <span class="fw-bold text-dark d-block">คลิกที่นี่เพื่อเลือกรูปภาพ</span>
-                            <small class="text-muted">รองรับไฟล์ JPG, PNG, WEBP</small>
+                            <i class="bi bi-image display-4 text-pink mb-2 d-block"></i>
+                            <span class="fw-bold text-dark d-block">คลิกที่นี่เพื่อเปลี่ยนรูปภาพ (ถ้ามี)</span>
                         </div>
                     </div>
-
-                    <!-- Input สำหรับเลือกไฟล์จริง (ซ่อนไว้) -->
-                    <input type="file" id="imageFile" name="imageFile" accept="image/*" class="d-none" onchange="previewImage(event)">
+                    <input type="file" id="imageFile" name="file" accept="image/*" class="d-none" onchange="previewImage(event)">
                 </div>
 
-                <!-- สถานะเริ่มต้น -->
                 <div class="mb-4">
-                    <label for="status" class="form-label fw-medium text-secondary small">Status (สถานะเริ่มต้น)</label>
+                    <label for="status" class="form-label fw-medium text-secondary small">Status (อัปเดตสถานะ)</label>
                     <select id="status" th:field="*{status}" class="form-select">
                         <option value="ว่าง">ว่าง (Available)</option>
                         <option value="ติดจอง">ติดจอง (Booked)</option>
@@ -148,7 +131,7 @@
                 <div class="d-flex gap-2 justify-content-end border-top pt-4">
                     <a th:href="@{/admin/dashboard}" class="btn btn-light px-4 rounded-pill">Cancel</a>
                     <button type="submit" class="btn btn-pink px-5 rounded-pill fw-bold">
-                        <i class="bi bi-save me-1"></i> Save Costume
+                        <i class="bi bi-save me-1"></i> Update Costume
                     </button>
                 </div>
             </form>

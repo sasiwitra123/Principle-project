@@ -1,5 +1,8 @@
 package com.example.costumerentalsystem.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.costumerentalsystem.model.Costume;
 import com.example.costumerentalsystem.model.User;
 import com.example.costumerentalsystem.repository.UserRepository;
 import com.example.costumerentalsystem.service.CostumeService;
@@ -30,24 +34,55 @@ public class HomeController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // 1. หน้าแรก: ค้นหา และแสดงชุดทั้งหมดพร้อมสถานะ (ว่าง, ติดจอง, รอคืน, ส่งซัก, ไม่ว่าง)
+    // 1. หน้าแรก: ค้นหา และแสดงชุดตามสิทธิ์ผู้ใช้งาน
     @GetMapping("/")
     public String home(@RequestParam(value = "search", required = false) String search, 
                        Model model, 
                        HttpSession session) {
+        
         User loggedInUser = (User) session.getAttribute("loggedInUser");
+        boolean isAdmin = false;
+
         if (loggedInUser != null) {
             model.addAttribute("loggedInUser", loggedInUser.getUsername());
             model.addAttribute("user", loggedInUser);
+            model.addAttribute("role", loggedInUser.getRole() != null ? loggedInUser.getRole().trim() : "USER");
+            
+            // 🟢 เช็คสิทธิ์ Admin อย่างรัดกุม (รองรับทั้ง Role และอีเมลที่มีคำว่า admin)
+            if (loggedInUser.getRole() != null && "ADMIN".equalsIgnoreCase(loggedInUser.getRole().trim())) {
+                isAdmin = true;
+            } else if (loggedInUser.getUsername() != null && loggedInUser.getUsername().toLowerCase().contains("admin")) {
+                isAdmin = true;
+            }
         } else {
             model.addAttribute("loggedInUser", "Guest");
+            model.addAttribute("role", "GUEST");
         }
 
+        // ส่งตัวแปร isAdmin ไปเปิด/ปิดปุ่มในหน้า HTML
+        model.addAttribute("isAdmin", isAdmin);
+
+        // ดึงข้อมูลชุดทั้งหมด
+        List<Costume> costumes;
         if (search != null && !search.trim().isEmpty()) {
-            model.addAttribute("costumes", costumeService.searchCostumes(search));
+            costumes = costumeService.searchCostumes(search);
         } else {
-            model.addAttribute("costumes", costumeService.getAllCostumes());
+            costumes = costumeService.getAllCostumes();
         }
+
+        // 🟢 กรองข้อมูลชุดเช่าสำหรับลูกค้าทั่วไป
+        if (isAdmin) {
+            // ถ้าเป็นแอดมิน -> เห็นครบทุกชุดทุกสถานะ
+        } else {
+            // ถ้าเป็นลูกค้า -> เห็นเฉพาะชุดที่ว่าง
+            costumes = costumes.stream()
+                    .filter(c -> c.getStatus() == null 
+                              || c.getStatus().trim().contains("ว่าง") 
+                              || c.getStatus().trim().toUpperCase().contains("AVAILABLE"))
+                    .collect(Collectors.toList());
+        }
+
+        model.addAttribute("costumes", costumes);
         model.addAttribute("searchKeyword", search);
 
         return "index";
@@ -69,7 +104,9 @@ public class HomeController {
         if (user != null && passwordEncoder.matches(password, user.getPassword())) {
             session.setAttribute("loggedInUser", user);
             
-            if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            // เช็คเด้งไป Dashboard สำหรับ Admin
+            if ((user.getRole() != null && "ADMIN".equalsIgnoreCase(user.getRole().trim())) ||
+                (user.getUsername() != null && user.getUsername().toLowerCase().contains("admin"))) {
                 return "redirect:/admin/dashboard";
             }
             return "redirect:/";
@@ -94,6 +131,8 @@ public class HomeController {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        
+        // 🔥 บังคับให้ผู้สมัครใหม่ทุกคนมีสิทธิ์เป็นแค่ USER เท่านั้น
         user.setRole("USER");
         userRepository.save(user);
 
