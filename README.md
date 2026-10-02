@@ -7,7 +7,7 @@
 | ลำดับ | ชื่อ-นามสกุล | รหัสนักศึกษา | Section | Branch | หน้าที่รับผิดชอบ |
 | :---: | :--- | :---: | :---: | :---: | :--- |
 | 1 | นางสาวศศิวิตรา วงศ์รุ่งอรุณเลิศ | 673380602-6 | 3 | sasiwitraw-eng| พัฒนา UI หลังบ้านฝั่ง Admin (Dashboard, เพิ่ม/ลบชุด, ใส่เลขพัสดุ) และเชื่อม Thymeleaf เข้ากับ Controller |
-| 2 | นางสาวธันยพร เสนาโนฤทธิ์ | 673380587-6 | 3 |  | พัฒนา UI หน้าเว็บฝั่งลูกค้า (Catalog, Detail, Rental Form, Order Tracking, Auth) |
+| 2 | นางสาวธันยพร เสนาโนฤทธิ์ | 673380587-6 | 3 |  | พัฒนา UI หน้าเว็บฝั่งลูกค้า (Catalog, Detail, Rental Form, Order Tracking, Auth) ตกแต่งเว็ปเพิ่ม แก้ไขเว็ป |
 | 3 | นางสาวทัดพิชา วะสาร | 673380584-2 | 3 | | ออกแบบและเชื่อมต่อฐานข้อมูล (Database Design & Backend Integration) สร้าง Data Entity, พัฒนา Business Logic (Service/JPA) และตั้งค่า Spring Security |
 ---
 
