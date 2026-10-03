@@ -96,18 +96,16 @@
                     </div>
 
                     <!-- ช่องทางโอนเงิน / PromptPay (ดึงรูปจาก /uploads/qrcode.png ตามในโปรเจกต์) -->
-                    <!-- ช่องทางโอนเงิน / PromptPay แบบระบุชื่อไฟล์ตรงๆ ให้เปิดดูได้ทันที -->
-<div class="border rounded-4 p-3 mb-4 text-center bg-white shadow-sm" style="border-color: var(--pink-light) !important;">
-    <p class="fw-bold text-pink mb-2 small"><i class="bi bi-qr-code-scan me-1"></i>สแกน QR Code เพื่อชำระเงิน</p>
-    
-    <div class="mb-2">
-        <!-- เปลี่ยนมาใช้ src ธรรมดาชี้ไปที่โฟลเดอร์ uploads -->
-        <img src="/uploads/qrcode.png" alt="PromptPay QR Code" class="img-fluid rounded-3 shadow-sm border p-1" style="max-width: 180px; height: auto;">
-    </div>
-    
-    <p class="mb-1 small text-secondary">ธนาคารกสิกรไทย: <strong class="text-dark">123-4-56789-0</strong></p>
-    <p class="text-muted small mb-0" style="font-size: 11px;">ชื่อบัญชี: ร้านเช่าชุด Costume Rental System</p>
-</div>
+                    <div class="border rounded-4 p-3 mb-4 text-center bg-white shadow-sm" style="border-color: var(--pink-light) !important;">
+                        <p class="fw-bold text-pink mb-2 small"><i class="bi bi-qr-code-scan me-1"></i>สแกน QR Code เพื่อชำระเงิน</p>
+                        
+                        <div class="mb-2">
+                            <img th:src="@{/uploads/qrcode.png}" alt="PromptPay QR Code" class="img-fluid rounded-3 shadow-sm border p-1" style="max-width: 180px; height: auto;">
+                        </div>
+                        
+                        <p class="mb-1 small text-secondary">ธนาคารกสิกรไทย: <strong class="text-dark">123-4-56789-0</strong></p>
+                        <p class="text-muted small mb-0" style="font-size: 11px;">ชื่อบัญชี: ร้านเช่าชุด Costume Rental System</p>
+                    </div>
 
                     <!-- ฟอร์มแจ้งชำระเงิน -->
                     <form th:action="@{/payments/submit}" method="post" enctype="multipart/form-data">
