@@ -1,10 +1,12 @@
 package com.example.costumerentalsystem.domain.enums;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
- * วงจรการเช่า ฐานของ State Pattern 
- *
+ * สถานะของใบเช่า (State pattern ใช้ enum นี้เป็นฐาน)
  * PENDING_PAYMENT -> PAID -> SHIPPED -> IN_USE -> RETURNED -> COMPLETED
- *        \-> CANCELLED (ยกเลิกได้ก่อนจัดส่ง)
+ * ยกเลิก (CANCELLED) ได้ตอนยังไม่จัดส่ง
  */
 public enum RentalStatus {
     PENDING_PAYMENT("รอชำระเงิน"),
@@ -23,5 +25,10 @@ public enum RentalStatus {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    // สถานะที่ชุดยังถูกจองอยู่ ใช้เช็กวันเช่าซ้อน
+    public static Set<RentalStatus> activeStatuses() {
+        return EnumSet.of(PENDING_PAYMENT, PAID, SHIPPED, IN_USE, RETURNED);
     }
 }
