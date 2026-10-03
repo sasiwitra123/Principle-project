@@ -11,7 +11,7 @@ import com.example.costumerentalsystem.repository.UserRepository;
 @Service
 public class UserService {
 
-    // Constructor Injection (เดิมใช้ @Autowired บน field ซึ่งผิดข้อกำหนด DIP ของใบงาน)
+    // Constructor Injection 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 

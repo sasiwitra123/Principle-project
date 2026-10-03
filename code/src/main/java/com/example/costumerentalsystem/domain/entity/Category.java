@@ -55,7 +55,7 @@ public class Category {
 
     public List<Costume> getCostumes() { return costumes; }
 
-    /** เทมเพลตเดิมแสดง ${costume.category} ตรง ๆ จึงให้ toString() คืนชื่อหมวด */
+    /** ให้ toString() คืนชื่อหมวด */
     @Override
     public String toString() {
         return name;

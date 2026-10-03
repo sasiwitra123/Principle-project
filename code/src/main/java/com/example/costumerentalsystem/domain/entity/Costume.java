@@ -32,7 +32,7 @@ public class Costume {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    /** ค่าเช่าต่อวัน (BigDecimal เพราะเป็นเงิน — ห้ามใช้ double) */
+    /** ค่าเช่าต่อวัน (BigDecimal เพราะเป็นเงิน ) */
     @Column(name = "price_per_day", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 

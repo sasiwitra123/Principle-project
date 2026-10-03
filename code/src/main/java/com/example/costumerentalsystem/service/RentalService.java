@@ -15,7 +15,7 @@ import com.example.costumerentalsystem.repository.CostumeRepository;
 import com.example.costumerentalsystem.repository.RentalRepository;
 
 /**
- * TODO(A4/A5): ชั่วคราวเพื่อให้ compile กับ Entity ใหม่
+ * ชั่วคราว เพื่อให้ compile กับ Entity ใหม่
  * จะถูกแทนที่ด้วย RentalService (interface) + RentalServiceImpl + PricingStrategy + RentalState
  */
 @Service

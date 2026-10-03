@@ -27,7 +27,7 @@ import jakarta.persistence.Table;
  * - Costume 1 ชุด มีได้หลาย Rental ในช่วงเวลาต่างกัน (One-to-Many จากฝั่ง Costume)
  * - Rental 1 รายการ มี Payment 1 รายการ และ Shipment 1 รายการ (One-to-One)
  *
- * สถานะใช้ {@link RentalStatus} ตัวเดียว (แทน status/rentalStatus/paymentStatus ที่ซ้ำกันเดิม)
+ * สถานะใช้ {@link RentalStatus} ตัวเดียว แทน status/rentalStatus/paymentStatus ที่ซ้ำกันเดิม)
  */
 @Entity
 @Table(name = "rentals")
@@ -141,8 +141,7 @@ public class Rental {
 
     /*
      * ---- Transitional accessors (ชั่วคราว) ----
-     * เทมเพลต/AdminController เดิมอ่านเขียน rental.courier / rental.trackingNo โดยตรง
-     * ตอนนี้ข้อมูลอยู่ใน Shipment จึงส่งต่อให้ จะลบเมื่อ Part C เปลี่ยนเป็น DTO
+     * ข้อมูลอยู่ใน Shipment จึงส่งต่อให้ จะลบเมื่อ Part C เปลี่ยนเป็น DTO
      */
     public String getCourier() { return shipment == null ? null : shipment.getCourier(); }
     public void setCourier(String courier) { ensureShipment().setCourier(courier); }

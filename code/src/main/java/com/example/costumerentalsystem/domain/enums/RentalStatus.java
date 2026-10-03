@@ -1,7 +1,7 @@
 package com.example.costumerentalsystem.domain.enums;
 
 /**
- * วงจรชีวิตของการเช่า (ใช้เป็นฐานของ State Pattern ในขั้นตอน A5)
+ * วงจรการเช่า ฐานของ State Pattern 
  *
  * PENDING_PAYMENT -> PAID -> SHIPPED -> IN_USE -> RETURNED -> COMPLETED
  *        \-> CANCELLED (ยกเลิกได้ก่อนจัดส่ง)

@@ -93,8 +93,7 @@ public class User {
 
     /*
      * ---- Transitional accessors (ชั่วคราว) ----
-     * ฟอร์ม/เทมเพลตเดิม bind กับ user.fullName, user.phone ฯลฯ โดยตรง
-     * เมธอดเหล่านี้ส่งต่อไปที่ UserProfile เพื่อให้หน้าเว็บเดิมยังทำงานได้
+     * เมธอดส่งต่อไปที่ UserProfile เพื่อให้หน้าเว็บเดิมยังทำงานได้
      * จะถูกลบเมื่อ Part C เปลี่ยนเป็น DTO (UserProfileRequest)
      */
     public String getFullName() { return profile == null ? null : profile.getFullName(); }

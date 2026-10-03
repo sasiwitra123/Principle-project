@@ -117,23 +117,30 @@
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/orders}" href="/orders"><i class="bi bi-truck me-1"></i> Track Order</a>
                     </li>
+                    <!-- 🟢 เพิ่มปุ่มลิงก์ไปหน้า My Rentals -->
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/user/rentals}" href="/user/rentals"><i class="bi bi-bag-check me-1"></i> My Rentals</a>
+                    </li>
                 </ul>
                 
                 <div class="d-flex align-items-center mt-1">
                     <!-- กรณีล็อกอินแล้ว -->
                     <div th:if="${loggedInUser != null and loggedInUser != 'Guest'}" class="d-flex align-items-center">
                         
-                        <!-- 👑 ปุ่ม Dashboard (แสดงเฉพาะแอดมิน) -->
+                        <!-- ปุ่ม Dashboard (แสดงเฉพาะแอดมิน) -->
                         <a th:if="${isAdmin or (loggedInUser != null and loggedInUser.toLowerCase().contains('admin'))}" 
                            th:href="@{/admin/dashboard}" 
-                           class="btn btn-sm btn-pink rounded-pill px-3 me-3 shadow-sm text-white">
+                           class="btn btn-sm btn-pink rounded-pill px-3 me-2 shadow-sm text-white">
                             <i class="bi bi-speedometer2 me-1"></i> Dashboard
                         </a>
 
-                        <a th:href="@{/user/profile}" href="/user/profile" class="profile-btn-link me-3 small d-flex align-items-center">
+                        <!-- 🟢 ปุ่มลิงก์ไปหน้า Profile -->
+                        <a th:href="@{/user/profile}" href="/user/profile" class="profile-btn-link me-2 small d-flex align-items-center">
                             <i class="bi bi-person-circle fs-6 me-1"></i>
-                            <span>Welcome, <strong th:text="${loggedInUser}">User</strong></span>
+                            <span>Profile</span>
                         </a>
+
+                        <span class="text-secondary small me-2 d-none d-lg-inline">Hi, <strong th:text="${loggedInUser}">User</strong></span>
                         <a th:href="@{/logout}" href="/logout" class="btn btn-outline-pink btn-sm rounded-pill">Logout</a>
                     </div>
 
@@ -175,13 +182,13 @@
                 <h5 class="fw-bold text-pink mb-0 me-3 d-flex align-items-center">
                     <i class="bi bi-grid-fill me-2"></i> Collection (<span id="costume-count" th:text="${#lists.size(costumes)}">10</span> items)
                 </h5>
-                <!-- 👑 ปุ่ม Add New Costume (แสดงเฉพาะแอดมิน) -->
+                <!-- ปุ่ม Add New Costume (แสดงเฉพาะแอดมิน) -->
                 <a th:if="${isAdmin}" th:href="@{/admin/costumes/new}" class="btn btn-sm btn-pink rounded-pill px-3 shadow-sm text-white">
                     <i class="bi bi-plus-circle me-1"></i> Add New Costume
                 </a>
             </div>
             
-            <!-- 👑 แถบ Filter พาสเทลไร้ขอบ (แสดงเฉพาะแอดมิน) -->
+            <!-- แถบ Filter พาสเทลไร้ขอบ (แสดงเฉพาะแอดมิน) -->
             <div class="col-12 col-md-7 d-flex justify-content-md-end flex-wrap gap-2" id="filter-buttons" th:if="${isAdmin}">
                 <button type="button" class="btn btn-sm rounded-pill px-3 filter-btn active shadow-sm border-0" style="background-color: #ced4da; color: #212529; opacity: 1;" onclick="setStatusFilter('ALL', this)">All</button>
                 <button type="button" class="btn btn-sm rounded-pill px-3 filter-btn shadow-sm border-0" style="background-color: #d1e7dd; color: #0f5132; opacity: 0.5;" onclick="setStatusFilter('AVAILABLE', this)">Available</button>
@@ -212,7 +219,7 @@
                     <div class="card-img-container">
                         <img th:src="${costume.imageUrl}" alt="Costume Image">
                         
-                        <!-- 👑 แสดงป้ายสถานะพาสเทลบนรูปภาพเฉพาะแอดมิน -->
+                        <!--แสดงป้ายสถานะพาสเทลบนรูปภาพเฉพาะแอดมิน -->
                         <span th:if="${isAdmin}" class="position-absolute top-0 end-0 m-2 badge rounded-pill px-3 py-2 shadow-sm fw-semibold"
                               th:style="${costume.status.name() == 'AVAILABLE'} ? 'background-color: #d1e7dd; color: #0f5132;' : 
                                         (${costume.status.name() == 'RESERVED'} ? 'background-color: #fff3cd; color: #664d03;' : 
@@ -243,7 +250,7 @@
                                 </a>
                             </div>
 
-                            <!-- 👑 ส่วนของปุ่ม Edit และ Delete (แสดงเฉพาะแอดมิน) -->
+                            <!--ส่วนของปุ่ม Edit และ Delete (แสดงเฉพาะแอดมิน) -->
                             <div th:if="${isAdmin}" class="d-flex gap-2 mt-3 pt-3 border-top">
                                 <a th:href="@{/admin/costumes/edit/{id}(id=${costume.id})}" class="btn btn-outline-secondary btn-sm w-50 rounded-pill">
                                     <i class="bi bi-pencil-square"></i> Edit
@@ -320,11 +327,11 @@
             
             const buttons = document.querySelectorAll('.filter-btn');
             buttons.forEach(btn => {
-                btn.style.opacity = '0.5'; // ปุ่มที่ไม่ได้เลือกจะจางลง
+                btn.style.opacity = '0.5';
                 btn.classList.remove('shadow');
             });
             
-            element.style.opacity = '1'; // ปุ่มที่เลือกสีชัดเต็มร้อย ไร้ขอบ
+            element.style.opacity = '1';
             element.classList.add('shadow');
 
             filterCostumes();
