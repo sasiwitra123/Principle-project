@@ -124,7 +124,7 @@
     <div class="container py-5 flex-grow-1" style="max-width: 850px;">
         <div class="mb-4">
             <h3 class="fw-bold text-dark mb-1"><i class="bi bi-box2-heart me-2 text-pink"></i>My Orders & Tracking</h3>
-            <p class="text-muted small">ติดตามสถานะและรับเลขพัสดุสำหรับชุดที่คุณเช่า</p>
+            <p class="text-muted small">ติดตามสถานะ ชำระเงิน และรับเลขพัสดุสำหรับชุดที่คุณเช่า</p>
         </div>
 
         <!-- หากไม่มีออเดอร์ หรือออเดอร์เป็น null -->
@@ -146,13 +146,33 @@
                 </div>
 
                 <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-4 border-bottom border-light pb-4">
-                        <img th:src="${order?.costume?.imageUrl ?: 'https://placehold.co/100x100?text=Costume'}" 
-                             class="rounded-4 me-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        <div>
-                            <h5 class="fw-bold mb-1 text-dark" th:text="${order?.costume?.name ?: 'ไม่มีชื่อชุด'}">ชื่อชุด</h5>
-                            <span class="text-muted small">สถานะรายการ: </span>
-                            <span class="badge bg-secondary-subtle text-dark fw-medium" th:text="${order?.status?.displayName ?: 'รอการอัปเดต'}">สถานะ</span>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 border-bottom border-light pb-4">
+                        <div class="d-flex align-items-center">
+                            <img th:src="${order?.costume?.imageUrl ?: 'https://placehold.co/100x100?text=Costume'}" 
+                                 class="rounded-4 me-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+                            <div>
+                                <h5 class="fw-bold mb-1 text-dark" th:text="${order?.costume?.name ?: 'ไม่มีชื่อชุด'}">ชื่อชุด</h5>
+                                <div class="mb-1">
+                                    <span class="text-muted small">สถานะรายการ: </span>
+                                    <span class="badge bg-secondary-subtle text-dark fw-medium" th:text="${order?.status?.displayName ?: 'รอการอัปเดต'}">สถานะ</span>
+                                </div>
+                                <div class="small text-secondary" th:if="${order?.totalRentalFee != null}">
+                                    ยอดค่าเช่าสุทธิ: <strong class="text-pink" th:text="${order.totalRentalFee} + ' บาท'">500.00 บาท</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ปุ่มแจ้งชำระเงิน / ป้ายสถานะการชำระเงิน -->
+                        <div class="ms-auto">
+                            <a th:if="${order?.status == null or order?.status?.name() == 'PENDING_PAYMENT'}"
+                               th:href="@{/payments/pay/{id}(id=${order.id})}"
+                               class="btn btn-pink btn-sm rounded-pill px-3 py-2 fw-semibold shadow-sm">
+                                <i class="bi bi-credit-card-2-front me-1"></i> แจ้งชำระเงิน
+                            </a>
+                            <span th:if="${order?.status != null and order?.status?.name() != 'PENDING_PAYMENT' and order?.status?.name() != 'CANCELLED'}"
+                                  class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">
+                                <i class="bi bi-check-circle-fill me-1"></i> ชำระเงินเรียบร้อย
+                            </span>
                         </div>
                     </div>
 
